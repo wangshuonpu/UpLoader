@@ -16,9 +16,11 @@ define(function (require) {
     var imgs = []; // 暂存上传成功图片的url
     // var imgsToUpload = []; // 要上传的图片列表
 
-    var FORM_TPL = '<form enctype="multipart/form-data" method="post">'
+    var TPL_FORM = '<form enctype="multipart/form-data" method="post">'
         + '<input type="file" name="file" accept="image/*" data-role="file-input">'
         + '</form>';
+    var TPL_OVERSIZE = '<span data-role="alert-oversize">图片过大</span>';
+    var TPL_FAIL = '<span data-role="alert-fail">上传失败\n点击重试</span>';
 
     var ERR_IMG_NUM_BEYOND = 1;
     var PENDING = 1;
@@ -146,7 +148,11 @@ define(function (require) {
 
         var me = this;
 
-        me._setImgs(index, {'file': img, 'state': PENDING});
+        me._setImgs(index, {
+            'file': img,
+            'state': PENDING,
+            'el': me._getImgWrapByIndex(index)
+        });
 
         // 图片超过最大限制
         if (img.size > me.options.maxSize * 1024 * 1024) {
@@ -207,7 +213,10 @@ define(function (require) {
 
             this._renderImg($imgBox, img, imgUrls);
 
-            this._setImgs(index, {'state': DONE, 'urls': imgUrls});
+            this._setImgs(index, {
+                'state': DONE,
+                'urls': imgUrls
+            });
 
             // 自定义上传成功处理
             this.done();
@@ -252,10 +261,9 @@ define(function (require) {
     };
 
     exports._failHandler = function (index, img, err) {
-        console.log('fail', index, img, err);
 
         this._setImgs(index, 'state', FAIL);
-        this._getImgWrapByIndex(index).find('div[data-role=alert]').html('<span data-role="alert-fail">上传失败\n点击重试</span>');
+        this._getImgs(index, 'el').find('div[data-role=alert]').html(TPL_FAIL);
     };
 
     /**
@@ -264,7 +272,7 @@ define(function (require) {
     exports._overSize = function (index) {
 
         this._setImgs(index, 'state', OVERSIZE);
-        this._getImgWrapByIndex(index).append('<span data-role="alert-oversize">图片过大</span>');
+        this._getImgs(index, 'el').append(TPL_OVERSIZE);
     };
 
     /**
@@ -304,7 +312,6 @@ define(function (require) {
         var $imgBox = $delBtn.parent();
         var index = $imgBox.attr('data-id');
 
-        imgs[index] = '';
         this._setImgs(index, null);
         $imgBox.remove();
     };
@@ -319,6 +326,48 @@ define(function (require) {
     exports.errorHandler = function (error) {
     };
 
+    exports.getImgUrls = function () {
+        var imgs = this._imgs;
+        var urls = [];
+
+        $.forEach(imgs, function (index, img) {
+            if (img !== null) {
+                urls.push(img.url);
+            }
+        });
+
+        return urls;
+    }
+
+    /**
+     * 获取上传状态
+     * 状态说明：
+     * 1，所有图片都上传成功
+     * 2，有图片正在上传中
+     * 3，没有正在上传的图片，但有图片上传失败或大小超限
+     *
+     * @return {number} 状态值
+     */
+    exports.getState = function () {
+        var imgs = this._imgs;
+        var state = DONE;
+
+        $.forEach(imgs, function (index, img) {
+            if (img) {
+                if (img.state === PENDING) {
+                    state = PENDING;
+                    break;
+                }
+
+                if (img.state === FAIL || img.state === OVERSIZE) {
+                    state = FAIL;
+	        }
+            }
+        })
+
+        return state;
+    }
+
     /**
      * 入口函数
      *
@@ -330,16 +379,16 @@ define(function (require) {
         this.state = '';
         url = this.options.action;
 
-        this.initDom();
-        this.initEvent();
+        this._initDom();
+        this._initEvent();
     };
 
     /**
      * 初始化Dom
      */
-    exports.initDom = function () {
+    exports._initDom = function () {
         // 初始化input
-        $form = $(FORM_TPL);
+        $form = $(TPL_FORM);
         $(this.options.formContainer).append($form);
         // form = $form[0];
         this.form = $form;
@@ -361,7 +410,7 @@ define(function (require) {
     /**
      * 初始化dom事件
      */
-    exports.initEvent = function () {
+    exports._initEvent = function () {
         // 上传input
         $input.on('change', this._onFileChange.bind(this));
 
