@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title></title>
+    <link href="src/index.less" rel="stylesheet">
+</head>
+<script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/2-1-4/esl.js"></script>
+<body>
+<div class="input-wrap"></div>
+
+<div class="main-wrap"></div>
+
+</body>
+<script src="dep/zepto.min.js"></script>
+<script>
+    require.config({
+        baseUrl: '/src'
+
+    });
+    require(['index'], function (app) {
+        app.init();
+    })
+</script>
+</html>
