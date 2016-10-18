@@ -1,4 +1,7 @@
 {
   "status": 0,
-  "statusInfo": "ok"
+  "data": {
+    "bigImg": "big_img_url",
+    "smallImg": "small_img_url"
+  }
 }

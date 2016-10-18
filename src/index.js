@@ -1,20 +1,19 @@
 /**
- * @file
- * @author Varsha (wangshuo16@baidu.com)
+ * 上传图片Demo 
+ * @author Varsha
  * @date 16/4/10
- * @description
- *
  */
 
 define(function (require) {
 
-    var fileUpload = require('fileUpload');
+    var ImgUploader = require('ImgUploader');
 
     return {
         init: function () {
-            fileUpload.init({
+            var imgUploader = new ImgUploader({
                 formContainer: '.input-wrap',
-                container: '.main-wrap'
+                container: '.main-wrap',
+                action: '../mock/imgUp.json'
             });
         }
     };

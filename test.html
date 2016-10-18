@@ -1,0 +1,187 @@
+{%if isset($tplData.tplSubData)%}
+{%foreach $tplData.tplSubData as $item%}
+{%if $item.cardName eq "olympic_huigu"%}
+{%$list = $item.result.videolist%}
+{%$bigPic = $item.result.video%}
+{%$repeatBg = $bigPic.pic%}
+{%$moreUrl = $item.result.moreUrl%}
+{%$abstract = $item.result.abstract%}
+{%$sec = $item.result.sec%}
+{%/if%}
+{%/foreach%}
+{%/if%}
+
+<style>
+    .wa-sg-olympics-general-info-big-pic .wa-sg-olympics-general-info-pic, .wa-sg-olympics-general-info-big-pic-play-now .wa-sg-olympics-general-info-pic {
+        background: url({%$repeatBg|getHttpsHost|escape:none%}) no-repeat;
+        background-size: 100%;
+    }
+</style>
+
+{%if !empty($bigPic)%}
+<!-- 视频banner -->
+{%if $bigPic.tag eq "直播" || $bigPic.tag eq "未开始"%}
+<!-- 视频直播banner -->
+<div class="wa-sg-olympics-general-info-big-pic-play-now">
+    {%fe_fn_c_box_adaptive_prefix url={%$bigPic.link|escape:none%} ltj="l"  sec={%$tplData.tplSubData[0].result.sec|default:'13881'|escape:'html'%} di={%$bigPic.link_di|default:''|escape:'html'%}  extra="g-video" class=" wa-sg-olympics-general-info-big-pic-a c-color"%}
+    <div class="wa-sg-olympics-general-info-pic-box">
+        <div class="wa-sg-olympics-general-info-pic">
+        </div>
+        <i class="wa-sg-olympics-general-play-icon wa-sg-olympics-general-info-pic-play"></i>
+        <p class="c-line-clamp1 wa-sg-olympics-general-info-summarized">
+            {%$bigPic.title|escape:'html'%}
+            {%if !empty($item.tag) && $item.tag eq "直播"%}
+                <span class="wa-sg-olympics-general-info-tag wa-sg-olympics-general-text-box-red c-gap-left c-text-box">
+                    {%$bigPic.tag|escape:'html'%}
+                </span>
+            {%/if%}
+        </p>
+        <p class="wa-sg-olympics-general-info-time">
+            2016-08-06 07:00
+        </p>
+    </div>
+    {%fe_fn_c_box_adaptive_suffix url={%$bigPic.link|escape:none%} class="c-blocka"%}
+</div>
+{%else%}
+<div class="wa-sg-olympics-general-info-big-pic">
+    {%fe_fn_c_box_adaptive_prefix url={%$bigPic.link|escape:none%} ltj="l"  sec={%$tplData.tplSubData[0].result.sec|default:'13881'|escape:'html'%} di={%$bigPic.link_di|default:''|escape:'html'%}  extra="g-video-p" class="wa-sg-olympics-general-info-pic-box"%}
+    <div class="c-img wa-sg-olympics-general-info-pic">
+    </div>
+    <div class="wa-sg-olympics-general-play-icon wa-sg-olympics-general-info-pic-play"></div>
+    {%fe_fn_c_box_adaptive_suffix url={%$bigPic.link|escape:none%}%}
+    {%if !empty($bigPic.title)%}
+    <div class="wa-sg-olympics-general-info-summarized-box">
+        {%fe_fn_c_box_adaptive_prefix url={%$bigPic.link|escape:none%}  sec={%$tplData.tplSubData[0].result.sec|default:'13881'|escape:'html'%} di={%$bigPic.link_di|default:''|escape:'html'%} ltj="l" extra="g-video-p" class="c-line-clamp1 wa-sg-olympics-general-info-summarized c-color"%}
+        {%$bigPic.title|escape:'html'%}
+        {%fe_fn_c_box_adaptive_suffix url={%$bigPic.link|escape:none%}%}
+        <p class="wa-sg-olympics-general-item-time c-color-gray">
+                <span class="wa-sg-olympics-general-item-from c-color-gray  c-gap-right-small">
+                {%$bigPic.from|escape:'html'%}
+                </span>
+            {%if !empty($bigPic.time)%}
+            时长
+            {%$bigPic.time|escape:'html'%}
+            {%/if%}
+            {%if !empty($bigPic.tag)%}
+            <span class="wa-sg-olympics-general-item-tag c-text-box {%if $bigPic.tag eq '直播'%}c-text-box-red{%/if%} {%if $bigPic.tag eq '集锦'%}c-text-box-blue{%/if%} {%if $bigPic.tag eq '回放'%}c-text-box-yellow{%/if%}{%if $bigPic.tag eq '经典'%}c-text-box-green{%/if%}{%if $bigPic.tag eq '其他'%}c-text-box-green{%/if%} c-gap-left-small">{%$bigPic.tag|escape:'html'%}</span>
+            {%/if%}
+        </p>
+    </div>
+    {%/if%}
+</div>
+{%/if%}
+{%/if%}
+
+<!-- 倒计时组件 -->
+{%$second = strtotime("2016-8-6 7:00:00")%}
+{%$serverTime=$smarty.now%}
+{%if $serverTime lte $second%}
+
+{%$timeDiff=$second-$serverTime%}
+{%if strlen($serverTime) > 10%}
+{%$timeDiff=$timeDiff/1000%}
+{%/if%}
+
+{%$timeDiffDay = ($timeDiff-60)/86400%}
+{%$timeDiffHour = ($timeDiff-60)%86400/3600%}
+{%$timeDiffMin = $timeDiff%3600/60%}
+{%$timeDiffSec = $timeDiff%60%}
+
+<div class="wa-sg-olympics-general-countdown-container c-line-top">
+    {%strip%}
+    <p class="wa-sg-olympics-general-countdown-text c-color">
+        <span>{%$timeDiffDay|string_format:'%d'|str_pad:2:"0":STR_PAD_LEFT%}</span>
+        <span class="c-gray c-color-gray wa-sg-olympics-general-countdown-unit c-gap-right">天</span>
+        <span>
+            {%$timeDiffHour|string_format:'%d'|str_pad:2:"0":STR_PAD_LEFT%}
+        </span>
+        <span class="c-gray c-color-gray wa-sg-olympics-general-countdown-unit c-gap-right">时</span>
+        <span>
+            {%$timeDiffMin|string_format:'%d'|str_pad:2:"0":STR_PAD_LEFT%}
+        </span>
+        <span class="c-gray c-color-gray wa-sg-olympics-general-countdown-unit c-gap-right">分</span>
+        <span>
+            {%$timeDiffSec|string_format:'%d'|str_pad:2:"0":STR_PAD_LEFT%}
+        </span>
+        <span class="c-gray c-color-gray wa-sg-olympics-general-countdown-unit c-gap-right">秒</span>
+    </p>
+    {%/strip%}
+    <p class="wa-sg-olympics-general_countdown-title c-color-gray">
+        距离奥运会开幕式还有
+    </p>
+</div>
+{%/if%}
+
+{%if !empty($abstract)%}
+<!-- 比赛规则 -->
+<div class="wa-sg-olympics-general-match-rule c-line-bottom">
+    <!-- 通用白底title -->
+    <div class="wa-sg-olympics-general-match-rule-title c-line-bottom">
+        <p class="wa-sg-olympics-general-match-rule-title-font c-color-gray-a">
+            开幕式简介
+        </p>
+    </div>
+    <div class="wa-sg-olympics-general-match-rule-content">
+        {%if is_array($abstract.line)%}
+        {%foreach $abstract.line as $item%}
+        <p class="wa-sg-olympics-general-match-rule-content-item c-abstract c-gap-top-large">
+            {%$item|escape:'html'%}
+        </p>
+        {%/foreach%}
+        {%else%}
+        <p class="wa-sg-olympics-general-match-rule-content-item c-abstract c-gap-top-large">
+            {%$abstract.line|escape:'html'%}
+        </p>
+        {%/if%}
+    </div>
+</div>
+{%/if%}
+
+{%if !empty($list)%}
+<!-- 左图右文新闻列表 -->
+<div class="wa-sg-olympics-general-info-news-list">
+    {%foreach from=$list item=item key=key%}
+    <div class="wa-sg-olympics-general-info-pic-left  c-line-bottom">
+        {%fe_fn_c_box_adaptive_prefix sec={%$sec|escape:'html'%} di={%$item.link_di|default:''|escape:'html'%} url={%$item.link|escape:none%} ltj="l" extra="g-v-p-{%$key|escape:'html'%}" class="c-blocka"%}
+        <div class="wa-sg-olympics-general-info-pic-left-box c-row">
+            <div class="c-span4 wa-sg-olympics-general-left-span">
+                {%fe_fn_c_img_delay imgsrc="{%$item.pic|escape:none%}" type="y" size=100 notimg=1%}
+                <div class="wa-sg-olympics-general-play-small-icon wa-sg-olympics-general-info-pic-play">
+                </div>
+            </div>
+            <div class="c-span8 wa-sg-olympics-general-right-span">
+                <p class="wa-sg-olympics-general-title c-line-clamp2 c-title c-color">
+                    {%$item.title|escape:'html'%}
+                </p>
+                <div class="wa-sg-olympics-general-item-info">
+                    <p class="wa-sg-olympics-general-item-time c-gray c-color-gray">
+                        {%if $item.from%}
+                    <span class="wa-sg-olympics-general-item-from c-color-gray  c-gap-right-small">
+                        {%if $item.from|escape:'html' eq "163"%}网易
+                        {%else if $item.from|escape:'html' eq "SINA"%}
+                        新浪
+                        {%else%}
+                        {%$item.from|escape:'html'%}
+                        {%/if%}
+                    </span>
+                        {%/if%}
+                        {%if !empty($item.time)%}
+                    <span class="wa-sg-olympics-general-item-from c-color-gray c-gap-right-small">
+                        时长
+                        {%$item.time|escape:'html'%}
+                    </span>
+                        {%/if%}
+                        {%if !empty($item.tag)%}
+                        <span class="wa-sg-olympics-general-item-tag c-text-box {%if $item.tag eq '直播'%}c-text-box-yellow{%/if%} {%if $item.tag eq '集锦'%}c-text-box-blue{%/if%} {%if $item.tag eq '回放'%}c-text-box-red{%/if%}{%if $item.tag eq '经典'%}c-text-box-green{%/if%}">{%$item.tag|escape:'html'%}</span>
+                        {%/if%}
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        {%fe_fn_c_box_adaptive_suffix url={%$item.link|escape:none%} class="c-blocka"%}
+    </div>
+    {%/foreach%}
+</div>
+{%/if%}
