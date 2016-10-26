@@ -1,29 +1,36 @@
 /**
- * 移动端图片上传组件
- * 
- * @author Varsha 
+ * @file 移动端图片上传组件
+ *
+ * @author Varsha
  */
+
+
 
 define(function (require) {
 
     var TPL_FORM = ''
-		+'<form enctype="multipart/form-data" method="post">'
-        +	'<input type="file" name="file" accept="image/*" data-role="file-input">'
+        + '<form enctype="multipart/form-data" method="post">'
+        +    '<input type="file" name="file" accept="image/*" data-role="file-input">'
         + '</form>';
     var TPL_OVERSIZE = '<span data-role="alert-oversize">图片过大</span>';
     var TPL_FAIL = '<span data-role="alert-fail">上传失败\n点击重试</span>';
 
-    var ERR_IMG_NUM_BEYOND = 1;
-    var INIT = 0;
-    var PENDING = 1;
-    var DONE = 2;
-    var FAIL = 3;
-    var OVERSIZE = 4;
+    var Error = {
+        IMG_NUM_BEYOND: 1
+    };
+
+    var State = {
+        INIT: 0,
+        PENDING: 1,
+        DONE: 2,
+        FAIL: 3,
+        OVERSIZE: 4
+    };
 
     // 组件默认配置项
     var DEFAULT_OPTIONS = {
-		// 上传表单容器，must
-        formContainer: '', 
+        // 上传表单容器，must
+        formContainer: '',
 
         // 图片容器, must
         container: '',
@@ -44,8 +51,41 @@ define(function (require) {
         loadingHtml: '...',
 
         // 删除按钮模板
-        deleteHtml: 'x'
+        deleteHtml: 'x',
+
+        // 进度格式化
+        progressFormatter: function (percent) {
+            return percent.toFixed(2) * 100 + '%';
+        }
     };
+
+    /**
+     * 图片上传组件
+     *
+     * @class
+     * @param {Object} options 自定义参数
+     * @param {Object} options.formContainer 上传表单容器
+     * @param {Object} options.container 图片容器
+     * @param {string} options.action 图片上传地址
+     * @param {number=} options.maxNum 上传图片数量上限(默认值8)
+     * @param {boolean=} options.multiple 图片是否允许多选(默认值true)
+     * @param {number=} options.maxSize 上传图片大小上限,单位M(默认值5M)
+     * @param {string=} options.loadimgHtml loading html 模板(默认值'...')
+     * @param {string=} options.deleteHtml 删除按钮模板(默认值'x')
+     * @param {Function=} options.success 上传成功处理函数
+     * @param {Function=} options.fail 上传失败处理函数
+     * @param {Function=} options.error 上传错误处理函数
+     * @param {Function=} options.progressFormatter 进度信息格式化函数
+     */
+    function ImgUploader(options) {
+        this.options = $.extend({}, DEFAULT_OPTIONS, options);
+
+        this._imgs = []; // 存储图片信息对象
+        this._currIndex = 0; // 当前图片序号
+
+        this._initDOM();
+        this._initEvent();
+    }
 
     /**
      * 存储图片信息
@@ -53,6 +93,7 @@ define(function (require) {
      * @param {number} index 图片序号
      * @param {Object|string} key 值对象|key
      * @param {*=} value 值
+     * @private
      */
     ImgUploader.prototype._setImgs = function (index, key, value) {
 
@@ -71,7 +112,7 @@ define(function (require) {
         }
 
         $.extend(this._imgs[index], key);
-    }
+    };
 
     /**
      * 获取图片信息
@@ -79,17 +120,19 @@ define(function (require) {
      * @param {number} index 图片序号
      * @param {string} key key
      * @return {*} 值
+     * @private
      */
     ImgUploader.prototype._getImgs = function (index, key) {
         return this._imgs[index][key];
-    }
+    };
 
     /**
      * 上传图片
      *
      * @param {Object} e input file change事件
+     * @private
      */
-	ImgUploader.prototype._doUpload = function (e) {
+    ImgUploader.prototype._doUpload = function (e) {
         var images = e.target.files;
         var imgLen = images.length;
 
@@ -98,7 +141,14 @@ define(function (require) {
         }
 
         if (imgLen + this._currIndex > this.options.maxNum) {
-            this.errorHandler({type: ERR_IMG_NUM_BEYOND, message: '最多只能上传' + this.options.maxNum + '张图片'});
+            var errorFn = this.options.error;
+            var errorMsg = {
+                type: Error.IMG_NUM_BEYOND,
+                message: '最多只能上传' + this.options.maxNum + '张图片'
+            };
+            if ($.isFunction(errorFn)) {
+                errorFn.call(this, errorMsg);
+            }
             return;
         }
 
@@ -118,7 +168,7 @@ define(function (require) {
         var imgIndex = this._currIndex;
         for (var i = 0; i < len; i++) {
             html += ''
-				+ '<div data-role="image-wrap" data-id="' + imgIndex + '">'
+                + '<div data-role="image-wrap" data-id="' + imgIndex + '">'
                 +     '<div data-role="alert" style="display: none;"></div>'
                 +     '<span data-role="delete" data-id="' + (imgIndex++) + '">' + this.options.deleteHtml + '</span>'
                 + '</div>';
@@ -131,6 +181,7 @@ define(function (require) {
      * 上传图片
      *
      * @param {Array} images 要上传的图片数组
+     * @private
      */
     ImgUploader.prototype._uploadImages = function (images) {
         var me = this;
@@ -145,6 +196,7 @@ define(function (require) {
      * @param {number} index 图片序号
      * @param {Blob} img 图片数据
      * @return {Object} xhr
+     * @private
      */
     ImgUploader.prototype._createXhr = function (index, img) {
         var xhr = $.ajaxSettings.xhr();
@@ -154,7 +206,7 @@ define(function (require) {
             xhr.upload.addEventListener('progress', this._progressHandler.bind(this, index, img));
         }
 
-		return xhr;
+        return xhr;
     };
 
     /**
@@ -169,10 +221,10 @@ define(function (require) {
         var el = this._getImgWrapByIndex(index);
 
         this._setImgs(index, {
-            'file': img,
-            'state': PENDING,
-            'el': el,
-            'alert': el.find('div[data-role=alert]')
+            file: img,
+            state: State.PENDING,
+            el: el,
+            alert: el.find('div[data-role=alert]')
         });
 
         // 图片超过最大限制
@@ -186,17 +238,17 @@ define(function (require) {
 
         // 添加自定义字段
         var params = this.options.params;
-		if (params instanceof Array) {
-			params.forEach(function (value, key) {
+        if (params instanceof Array) {
+            params.forEach(function (value, key) {
                 formData.append(key, value);
-			});
-		}
+            });
+        }
 
         var xhr = $.ajax({
             url: this.options.action,
             type: 'POST',
             xhr: this._createXhr.bind(this, index, img),
-            beforeSend: this.beforeSendHandler.bind(this, index, img),
+            beforeSend: this._beforeSendHandler.bind(this, index, img),
             success: this._completeHandler.bind(this, index, img),
             error: this._failHandler.bind(this, index, img),
             data: formData,
@@ -213,15 +265,16 @@ define(function (require) {
      *
      * @param {number} index 图片序号
      * @param {Blob} img 图片数据
-     * @param {Object} event 进度事件
+     * @param {Object} e 进度事件
+     * @private
      */
     ImgUploader.prototype._progressHandler = function (index, img, e) {
         if (e.lengthComputable) {
-            percent = e.loaded / e.total;
+            var percent = e.loaded / e.total;
             this._renderAlert(
-				this._getImgs(index, 'alert'), 
-                this.progressFormatter(percent)
-			);
+                this._getImgs(index, 'alert'),
+                this.options.progressFormatter(percent)
+            );
         }
     };
 
@@ -229,19 +282,10 @@ define(function (require) {
      * 开始上传的处理
      *
      * @param {number} index 图片序号
+     * @private
      */
-    ImgUploader.prototype.beforeSendHandler = function (index) {
-		this._renderAlert(this._getImgs(index, 'alert'), this.options.loadingHtml);
-    };
-
-    /**
-     * 格式化进度
-     *
-     * @param {number} percent 进度小数
-     * @return {string} 进度html片段
-     */
-    ImgUploader.prototype.progressFormatter = function (percent) {
-        return percent.toFixed(2) * 100 + '%';
+    ImgUploader.prototype._beforeSendHandler = function (index) {
+        this._renderAlert(this._getImgs(index, 'alert'), this.options.loadingHtml);
     };
 
     /**
@@ -259,20 +303,22 @@ define(function (require) {
             return;
         }
 
-		var imgBox = this._getImgs(index, 'el');
-		var imgUrls = res.data; // 从返回数据中获取图片url信息
+        var imgBox = this._getImgs(index, 'el');
+        var imgUrls = res.data; // 从返回数据中获取图片url信息
 
-		this._getImgs(index, 'alert').hide();
-		this._renderImg(imgBox, img, imgUrls);
+        this._getImgs(index, 'alert').hide();
+        this._renderImg(imgBox, img, imgUrls);
 
-		this._setImgs(index, {
-			state: DONE,
-			urls: imgUrls
-		});
+        this._setImgs(index, {
+            state: State.DONE,
+            urls: imgUrls
+        });
 
-		// 自定义上传成功处理
-		this.onsuccess(index, img, res);
-        
+        // 自定义上传成功处理
+        var successFn = this.options.success;
+        if ($.isFunction(successFn)) {
+            successFn.call(this, index, img, res);
+        }
     };
 
     /**
@@ -298,14 +344,14 @@ define(function (require) {
             return;
         }
 
-		var smallImg = url;
-		var bigImg = url;
+        var smallImg = url;
+        var bigImg = url;
 
-		if (typeof url === 'object') {
-			smallImg = url.smallImg;
-			bigImg = url.bigImg;
-		}
-    
+        if (typeof url === 'object') {
+            smallImg = url.smallImg;
+            bigImg = url.bigImg;
+        }
+
         imgWrap.append('<img data-role="img" '
             + 'src="' + smallImg + '" '
             + 'data-src="' + bigImg + '">');
@@ -321,7 +367,7 @@ define(function (require) {
     ImgUploader.prototype._renderAlert = function (alert, tpl) {
         alert.html(tpl);
         alert.show();
-	}
+    };
 
     /**
      * 上传失败回调
@@ -333,11 +379,14 @@ define(function (require) {
      */
     ImgUploader.prototype._failHandler = function (index, img, res) {
 
-        this._setImgs(index, 'state', FAIL);
+        this._setImgs(index, 'state', State.FAIL);
         var alert = this._getImgs(index, 'alert');
         this._renderAlert(alert, TPL_FAIL);
 
-        this.onfail(index, img, res);
+        var failFn = this.options.fail;
+        if ($.isFunction(failFn)) {
+            failFn.call(this, index, img, res);
+        }
     };
 
     /**
@@ -348,31 +397,9 @@ define(function (require) {
      */
     ImgUploader.prototype._overSize = function (index) {
 
-        this._setImgs(index, 'state', OVERSIZE);
+        this._setImgs(index, 'state', State.OVERSIZE);
         this._renderAlert(this._getImgs(index, 'alert'), TPL_OVERSIZE);
     };
-
-    /**
-     * 上传成功处理接口
-     *
-     * @event
-     * @param {number} index 图片序号
-     * @param {Blob} img 图片数据
-     * @param {Object} res response
-     */
-    ImgUploader.prototype.onsuccess = function (index, img, res) {
-    }
-
-    /**
-     * 上传失败处理接口
-     *
-     * @event
-     * @param {number} index 图片序号
-     * @param {Blob} img 图片数据
-     * @param {Object} res response
-     */
-    ImgUploader.prototype.onfail = function (index, img, res) {
-    }
 
     /**
      * 获取相应序号的图片容器
@@ -392,7 +419,7 @@ define(function (require) {
      * @private
      */
     ImgUploader.prototype._retry = function (e) {
-		var alert = $(e.currentTarget);
+        var alert = $(e.currentTarget);
         var imgBox = alert.closest('[data-role=image-wrap]');
         var index = imgBox.attr('data-id');
 
@@ -420,94 +447,9 @@ define(function (require) {
     };
 
     /**
-     * 错误处理
-     *
-     * @event
-     * @param {Object} error error对象
-     * @param {number} error.type 错误类型
-     * @param {string} error.message 报错信息
-     */
-    ImgUploader.prototype.onerror = function (error) {
-    };
-
-    /**
-     * 获取上传完成图片url列表
-     *
-     * @public
-     * @return {Array} 图片url数组
-     */
-    ImgUploader.prototype.getImgUrls = function () {
-        return this._imgs.filter(function (img) {
-            return img != null;
-        });
-    }
-
-    /**
-     * 获取上传状态
-     * 状态说明：
-     * 1，所有图片都上传成功
-     * 2，有图片正在上传中
-     * 3，没有正在上传的图片，但有图片上传失败或大小超限
-     *
-     * @public
-     * @return {number} 状态值
-     */
-    ImgUploader.prototype.getState = function () {
-        var imgs = this._imgs;
-
-        if (!imgs || imgs.length === 0) {
-            return INIT;
-        }
-
-        var state = DONE;
-
-        imgs.forEach(function (img) {
-            if (img == null) {
-				return;
-			}
-			
-			switch (img.state) {
-				case PENDING:
-					state = PENDING;
-					return false;
-
-				case FAIL:
-				case OVERSIZE:
-					state = FAIL;
-					return false;
-			}
-        });
-
-        return state;
-    }
-
-
-    /**
-     * 图片上传组件 
-     *
-     * @class
-     * @param {Object} options 自定义参数
-     * @param {Object} options.formContainer 上传表单容器
-     * @param {Object} options.container 图片容器
-     * @param {string} options.action 图片上传地址
-     * @param {number=} options.maxNum 上传图片数量上限(默认值8)
-     * @param {boolean=} options.multiple 图片是否允许多选(默认值true)
-     * @param {number=} options.maxSize 上传图片大小上限,单位M(默认值5M)
-     * @param {string=} options.loadimgHtml loading html 模板(默认值'...')
-     * @param {string=} options.deleteHtml 删除按钮模板(默认值'x')
-     */
-	function ImgUploader(options) {
-        this.options = $.extend({}, DEFAULT_OPTIONS, options);
-
-		this._imgs = []; // 存储图片信息对象
-		this._currIndex = 0; // 当前图片序号
-
-        this._initDOM();
-        this._initEvent();
-    };
-
-    /**
      * 初始化DOM
+     *
+     * @private
      */
     ImgUploader.prototype._initDOM = function () {
         // 初始化input
@@ -531,23 +473,101 @@ define(function (require) {
 
     /**
      * 初始化dom事件
+     *
+     * @private
      */
     ImgUploader.prototype._initEvent = function () {
         // 上传input
         this._input.on('change', this._doUpload.bind(this));
 
         // 删除按钮
-		this._container.on(
-			'click', 
-			'span[data-role=delete]',
+        this._container.on(
+            'click',
+            'span[data-role=delete]',
             this._deleteImg.bind(this)
-		);
+        );
 
         this._container.on(
-			'click', 
-			'span[data-role=alert-fail]',
-			this._retry.bind(this)
-		);
+            'click',
+            'span[data-role=alert-fail]',
+            this._retry.bind(this)
+        );
+    };
+
+    /**
+     * 获取上传状态
+     * 状态说明：
+     * 1，所有图片都上传成功
+     * 2，有图片正在上传中
+     * 3，没有正在上传的图片，但有图片上传失败或大小超限
+     *
+     * @public
+     * @return {number} 状态值
+     */
+    ImgUploader.prototype.getState = function () {
+        var imgs = this._imgs;
+
+        if (!imgs || imgs.length === 0) {
+            return State.INIT;
+        }
+
+        var state = State.DONE;
+
+        imgs.forEach(function (img) {
+            if (img == null) {
+                return;
+            }
+
+            state = img.state;
+            if (state === State.OVERSIZE) {
+                state = State.FAIL;
+            }
+
+            return state === State.DONE;
+        });
+
+        return state;
+    };
+
+    /**
+     * 获取上传完成图片url列表
+     *
+     * @public
+     * @return {Array} 图片url数组
+     */
+    ImgUploader.prototype.getImgUrls = function () {
+        var imgs = this._imgs;
+        var imgUrls = [];
+        imgs.forEach(function (img) {
+
+            if (img.urls) {
+                imgUrls.push(img.urls);
+            }
+        });
+
+        return imgUrls;
+    };
+
+    /**
+     * 禁止上传input
+     *
+     * @public
+     * @return {Array} 图片url数组
+     */
+    ImgUploader.prototype.disable = function () {
+        this._input.on('click.upload', function () {
+            return false;
+        });
+    };
+
+    /**
+     * 解禁上传input
+     *
+     * @public
+     * @return {Array} 图片url数组
+     */
+    ImgUploader.prototype.enable = function () {
+        this._input.off('click.upload');
     };
 
     return ImgUploader;
