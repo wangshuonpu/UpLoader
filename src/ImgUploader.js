@@ -271,6 +271,7 @@ define(function (require) {
     ImgUploader.prototype._progressHandler = function (index, img, e) {
         if (e.lengthComputable) {
             var percent = e.loaded / e.total;
+            console.log(percent.toFixed(2));
             this._renderAlert(
                 this._getImgs(index, 'alert'),
                 this.options.progressFormatter(percent)
@@ -552,7 +553,6 @@ define(function (require) {
      * 禁止上传input
      *
      * @public
-     * @return {Array} 图片url数组
      */
     ImgUploader.prototype.disable = function () {
         this._input.on('click.upload', function () {
@@ -564,7 +564,6 @@ define(function (require) {
      * 解禁上传input
      *
      * @public
-     * @return {Array} 图片url数组
      */
     ImgUploader.prototype.enable = function () {
         this._input.off('click.upload');
