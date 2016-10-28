@@ -304,8 +304,8 @@ define(function (require) {
         }
 
         var imgBox = this._getImgs(index, 'el');
-        var imgUrls = res.url; // 从返回数据中获取图片url信息
-        var extra = res.data;
+        var imgUrls = res.data.url; // 从返回数据中获取图片url信息
+        var extra = res.data.data;
 
         this._getImgs(index, 'alert').hide();
         this._renderImg(imgBox, img, imgUrls);
