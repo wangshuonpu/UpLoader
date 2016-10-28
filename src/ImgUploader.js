@@ -271,7 +271,6 @@ define(function (require) {
     ImgUploader.prototype._progressHandler = function (index, img, e) {
         if (e.lengthComputable) {
             var percent = e.loaded / e.total;
-            console.log(percent.toFixed(2));
             this._renderAlert(
                 this._getImgs(index, 'alert'),
                 this.options.progressFormatter(percent)
@@ -305,14 +304,16 @@ define(function (require) {
         }
 
         var imgBox = this._getImgs(index, 'el');
-        var imgUrls = res.data; // 从返回数据中获取图片url信息
+        var imgUrls = res.url; // 从返回数据中获取图片url信息
+        var extra = res.data;
 
         this._getImgs(index, 'alert').hide();
         this._renderImg(imgBox, img, imgUrls);
 
         this._setImgs(index, {
             state: State.DONE,
-            urls: imgUrls
+            urls: imgUrls,
+            extra: extra
         });
 
         // 自定义上传成功处理
@@ -536,17 +537,32 @@ define(function (require) {
      * @public
      * @return {Array} 图片url数组
      */
-    ImgUploader.prototype.getImgUrls = function () {
+    ImgUploader.prototype.getImgsUrl = function () {
         var imgs = this._imgs;
         var imgUrls = [];
         imgs.forEach(function (img) {
-
             if (img.urls) {
                 imgUrls.push(img.urls);
             }
         });
-
         return imgUrls;
+    };
+
+    /**
+     * 获取上传完成图片extra data
+     *
+     * @public
+     * @return {Array} 图片url数组
+     */
+    ImgUploader.prototype.getImgsExtraInfo = function () {
+        var imgs = this._imgs;
+        var extras = [];
+        imgs.forEach(function (img) {
+            if (img.extra) {
+                extras.push(img.extra);
+            }
+        });
+        return extras;
     };
 
     /**

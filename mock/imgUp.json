@@ -1,7 +1,10 @@
 {
   "status": 0,
+  "url": {
+        "bigImg": "big_img_url",
+        "smallImg": "small_img_url"
+    },
   "data": {
-    "bigImg": "big_img_url",
-    "smallImg": "small_img_url"
+    "pid": 6767
   }
 }
