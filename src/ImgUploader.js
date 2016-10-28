@@ -414,7 +414,7 @@ define(function (require) {
         return $('div[data-role="image-wrap"][data-id="' + index + '"]');
     };
 
-    /*
+    /**
      * 重试上传
      *
      * @param {Object} e click event
