@@ -313,7 +313,7 @@ define(function (require) {
         this._setImgs(index, {
             state: State.DONE,
             urls: imgUrls,
-            extra: extra
+            response: res.data
         });
 
         // 自定义上传成功处理
@@ -537,6 +537,23 @@ define(function (require) {
      * @public
      * @return {Array} 图片url数组
      */
+    ImgUploader.prototype.getResponseData = function () {
+        var imgs = this._imgs;
+        var imgUrls = [];
+        imgs.forEach(function (img) {
+            if (img.response) {
+                imgUrls.push(img.response);
+            }
+        });
+        return imgUrls;
+    };
+
+    /**
+     * 获取上传完成图片url列表
+     *
+     * @public
+     * @return {Array} 图片url数组
+     */
     ImgUploader.prototype.getImgsUrl = function () {
         var imgs = this._imgs;
         var imgUrls = [];
@@ -546,23 +563,6 @@ define(function (require) {
             }
         });
         return imgUrls;
-    };
-
-    /**
-     * 获取上传完成图片extra data
-     *
-     * @public
-     * @return {Array} 图片url数组
-     */
-    ImgUploader.prototype.getImgsExtraInfo = function () {
-        var imgs = this._imgs;
-        var extras = [];
-        imgs.forEach(function (img) {
-            if (img.extra) {
-                extras.push(img.extra);
-            }
-        });
-        return extras;
     };
 
     /**
