@@ -42,7 +42,7 @@ define(function (require) {
         maxNum: 8,
 
         // 文件选择，是否可多选
-        multiple: true,
+        multiple: false,
 
         // 上传图片大小上限
         maxSize: 5,
@@ -209,6 +209,15 @@ define(function (require) {
         return xhr;
     };
 
+    ImgUploader.prototype._createForm = function (index) {
+        var form = $(TPL_FORM);
+        $(this.options.formContainer).append(form);
+        form.hide();
+
+        // this._setImgs(index, 'form', form);
+        this._form = form;
+    }
+
     /**
      * 上传图片
      *
@@ -217,6 +226,8 @@ define(function (require) {
      * @private
      */
     ImgUploader.prototype._postImg = function (index, img) {
+
+        this._createForm(index);
 
         var el = this._getImgWrapByIndex(index);
 
@@ -234,7 +245,7 @@ define(function (require) {
         }
 
         var formData = new FormData(this._form[0]);
-        formData.append('file', img);
+        // formData.append('file', img);
 
         // 添加自定义字段
         var params = this.options.params;
@@ -457,6 +468,7 @@ define(function (require) {
         // 初始化input
         var form = $(TPL_FORM);
         $(this.options.formContainer).append(form);
+        this._setImgs(0, 'form', form);
         this._form = form;
 
         var input = form.find('input');

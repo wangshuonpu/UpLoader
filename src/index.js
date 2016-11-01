@@ -14,7 +14,7 @@ define(function (require) {
                 formContainer: '.input-wrap',
                 container: '.main-wrap',
                 action: '../mock/imgUp.json',
-                maxNum: 3,
+                maxNum: 8,
                 error: function (err) {
                     console.log(err);
                 }
