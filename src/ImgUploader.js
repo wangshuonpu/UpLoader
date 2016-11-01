@@ -570,9 +570,12 @@ define(function (require) {
      *
      * @public
      */
-    ImgUploader.prototype.disable = function () {
-        this._input.on('click.upload', function () {
-            return false;
+    ImgUploader.prototype.disable = function (callback) {
+        this._input.on('click.upload', function (e) {
+            e.preventDefault();
+            if (typeof callback === 'function') {
+                callback();
+            }
         });
     };
 
