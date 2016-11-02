@@ -42,7 +42,7 @@ define(function (require) {
         maxNum: 8,
 
         // 文件选择，是否可多选
-        multiple: false,
+        multiple: true,
 
         // 上传图片大小上限
         maxSize: 5,
@@ -209,17 +209,6 @@ define(function (require) {
         return xhr;
     };
 
-    ImgUploader.prototype._createForm = function () {
-        var form = $(TPL_FORM);
-        $(this.options.formContainer).append(form);
-        // form.hide();
-        this._form.hide();
-
-        // this._setImgs(index, 'form', form);
-        this._form = form;
-        this._input = form.find('[data-role=file-input]');
-    }
-
     /**
      * 上传图片
      *
@@ -228,8 +217,6 @@ define(function (require) {
      * @private
      */
     ImgUploader.prototype._postImg = function (index, img) {
-
-        // this._createForm(index);
 
         var el = this._getImgWrapByIndex(index);
 
@@ -246,8 +233,8 @@ define(function (require) {
             return;
         }
 
-        var formData = new FormData(this._form[0]);
-        // formData.append('file', img);
+        var formData = new FormData();
+        formData.append('file', img);
 
         // 添加自定义字段
         var params = this.options.params;
@@ -301,9 +288,6 @@ define(function (require) {
         this._renderAlert(this._getImgs(index, 'alert'), this.options.loadingHtml);
     };
 
-    ImgUploader.prototype._finishHandler = function () {
-        this._createForm();
-    }
     /**
      * 图片上传成功回调
      *
@@ -313,8 +297,6 @@ define(function (require) {
      * @private
      */
     ImgUploader.prototype._completeHandler = function (index, img, res) {
-
-        this._finishHandler();
 
         if (+res.status !== 0) {
             this._failHandler(index, img, res);
@@ -400,8 +382,8 @@ define(function (require) {
      * @private
      */
     ImgUploader.prototype._failHandler = function (index, img, res) {
-
-        this._finishHandler();
+// debugger
+        // this._finishHandler();
 
         this._setImgs(index, 'state', State.FAIL);
         var alert = this._getImgs(index, 'alert');
@@ -421,7 +403,7 @@ define(function (require) {
      */
     ImgUploader.prototype._overSize = function (index) {
 
-        this._finishHandler();
+        // this._finishHandler();
         this._setImgs(index, 'state', State.OVERSIZE);
         this._renderAlert(this._getImgs(index, 'alert'), TPL_OVERSIZE);
     };
@@ -480,7 +462,6 @@ define(function (require) {
         // 初始化input
         var form = $(TPL_FORM);
         $(this.options.formContainer).append(form);
-        this._setImgs(0, 'form', form);
         this._form = form;
 
         var input = form.find('input');
@@ -504,10 +485,10 @@ define(function (require) {
      */
     ImgUploader.prototype._initEvent = function () {
 
-        $(this.options.formContainer)
-            .on('change', '[data-role=file-input]', this._doUpload.bind(this));
+        // $(this.options.formContainer)
+        //     .on('change', '[data-role=file-input]', this._doUpload.bind(this));
         // 上传input
-        // this._input.on('change', this._doUpload.bind(this));
+        this._input.on('change', this._doUpload.bind(this));
 
         // 删除按钮
         this._container.on(
