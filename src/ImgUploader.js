@@ -209,13 +209,15 @@ define(function (require) {
         return xhr;
     };
 
-    ImgUploader.prototype._createForm = function (index) {
+    ImgUploader.prototype._createForm = function () {
         var form = $(TPL_FORM);
         $(this.options.formContainer).append(form);
-        form.hide();
+        // form.hide();
+        this._form.hide();
 
         // this._setImgs(index, 'form', form);
         this._form = form;
+        this._input = form.find('[data-role=file-input]');
     }
 
     /**
@@ -227,7 +229,7 @@ define(function (require) {
      */
     ImgUploader.prototype._postImg = function (index, img) {
 
-        this._createForm(index);
+        // this._createForm(index);
 
         var el = this._getImgWrapByIndex(index);
 
@@ -299,6 +301,9 @@ define(function (require) {
         this._renderAlert(this._getImgs(index, 'alert'), this.options.loadingHtml);
     };
 
+    ImgUploader.prototype._finishHandler = function () {
+        this._createForm();
+    }
     /**
      * 图片上传成功回调
      *
@@ -308,6 +313,8 @@ define(function (require) {
      * @private
      */
     ImgUploader.prototype._completeHandler = function (index, img, res) {
+
+        this._finishHandler();
 
         if (+res.status !== 0) {
             this._failHandler(index, img, res);
@@ -332,6 +339,8 @@ define(function (require) {
         if ($.isFunction(successFn)) {
             successFn.call(this, index, img, res);
         }
+
+        // this._createForm(index+1);
     };
 
     /**
@@ -392,6 +401,8 @@ define(function (require) {
      */
     ImgUploader.prototype._failHandler = function (index, img, res) {
 
+        this._finishHandler();
+
         this._setImgs(index, 'state', State.FAIL);
         var alert = this._getImgs(index, 'alert');
         this._renderAlert(alert, TPL_FAIL);
@@ -410,6 +421,7 @@ define(function (require) {
      */
     ImgUploader.prototype._overSize = function (index) {
 
+        this._finishHandler();
         this._setImgs(index, 'state', State.OVERSIZE);
         this._renderAlert(this._getImgs(index, 'alert'), TPL_OVERSIZE);
     };
@@ -491,8 +503,11 @@ define(function (require) {
      * @private
      */
     ImgUploader.prototype._initEvent = function () {
+
+        $(this.options.formContainer)
+            .on('change', '[data-role=file-input]', this._doUpload.bind(this));
         // 上传input
-        this._input.on('change', this._doUpload.bind(this));
+        // this._input.on('change', this._doUpload.bind(this));
 
         // 删除按钮
         this._container.on(
